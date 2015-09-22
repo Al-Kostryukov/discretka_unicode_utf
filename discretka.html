@@ -1,0 +1,295 @@
+﻿<!--without any doctype-->
+<html>
+	<head>
+		<script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>		
+		<style>
+			table div{
+				outline:none;
+				font-size:22px;
+				border:3px solid #fff;
+				border-radius:4px;
+				display:block;
+			}
+
+			table div[contenteditable=true]{
+				border-bottom:3px solid #eee;
+			}
+			
+
+			#bin{
+				width:220px;
+			}
+
+			#UTFbin{
+				width:320px;
+			}
+
+			.red{
+				color:red;
+			}
+
+			.green{
+				color:black;
+			}
+			.blue{
+				color:blue;
+			}
+			.sky{
+				color:#2ecc71;
+			}
+		</style>
+		<script>
+
+
+			(function($) {
+			  $.fn.caret = function(pos) {
+			    var target = this[0];
+				var isContentEditable = target.contentEditable === 'true';
+			    //get
+			    if (arguments.length == 0) {
+			      //HTML5
+			      if (window.getSelection) {
+			        //contenteditable
+			        if (isContentEditable) {
+			          target.focus();
+			          var range1 = window.getSelection().getRangeAt(0),
+			              range2 = range1.cloneRange();
+			          range2.selectNodeContents(target);
+			          range2.setEnd(range1.endContainer, range1.endOffset);
+			          return range2.toString().length;
+			        }
+			        //textarea
+			        return target.selectionStart;
+			      }
+			      //IE<9
+			      if (document.selection) {
+			        target.focus();
+			        //contenteditable
+			        if (isContentEditable) {
+			            var range1 = document.selection.createRange(),
+			                range2 = document.body.createTextRange();
+			            range2.moveToElementText(target);
+			            range2.setEndPoint('EndToEnd', range1);
+			            return range2.text.length;
+			        }
+			        //textarea
+			        var pos = 0,
+			            range = target.createTextRange(),
+			            range2 = document.selection.createRange().duplicate(),
+			            bookmark = range2.getBookmark();
+			        range.moveToBookmark(bookmark);
+			        while (range.moveStart('character', -1) !== 0) pos++;
+			        return pos;
+			      }
+			      // Addition for jsdom support
+			      if (target.selectionStart)
+			        return target.selectionStart;
+			      //not supported
+			      return 0;
+			    }
+			    //set
+			    if (pos == -1)
+			      pos = this[isContentEditable? 'text' : 'val']().length;
+			    //HTML5
+			    if (window.getSelection) {
+			      //contenteditable
+			      if (isContentEditable) {
+			        target.focus();
+			        window.getSelection().collapse(target.firstChild, pos);
+			      }
+			      //textarea
+			      else
+			        target.setSelectionRange(pos, pos);
+			    }
+			    //IE<9
+			    else if (document.body.createTextRange) {
+			      if (isContentEditable) {
+			        var range = document.body.createTextRange();
+			        range.moveToElementText(target);
+			        range.moveStart('character', pos);
+			        range.collapse(true);
+			        range.select();
+			      } else {
+			        var range = target.createTextRange();
+			        range.move('character', pos);
+			        range.select();
+			      }
+			    }
+			    if (!isContentEditable)
+			      target.focus();
+			    return this;
+			  }
+			})(jQuery);
+
+
+
+			function convert(num, from, to) {
+		        //преобразуем данные по основанию from в десятичную систему
+		        num = parseInt(num, from);
+		        //преобразуем данные из десятичной в систему по указанному основанию to
+		        return num.toString(to).toUpperCase();
+
+		    }
+
+
+		    function clearAll(){
+		    	$('div').empty();
+		    }
+
+			function calculateAll(main){
+				var arr = ['#dec', '#hex', '#bin', '#UTFbin', '#UTFhex'],
+					arrSys = [10, 16, 2],
+					mainStr = arr[main],
+					mainVal = $(mainStr).text();
+
+				if(!mainVal.length) {
+					clearAll();
+					return;
+				}
+
+	/*dec*/		var decVal = parseInt(mainVal, arrSys[main]),
+				 
+
+				var conv = convert(mainVal, arrSys[main], 2);
+				var str_ = "";
+				for(var j = 0; j<16-conv.length; j++) str_ += "0";
+	/*bin*/		var binVal_withZeros = = str_+conv;
+
+						//
+
+				if(decVal>65535){
+					clearAll();
+					$(mainStr).text(mainVal);
+					$(mainStr).css({
+						border:'3px solid red'
+					})
+
+					$(mainStr).caret(mainVal.length);
+					return;
+				}
+
+				$(mainStr).css({
+						border:'3px solid #fff',
+						borderBottom:'3px solid #eee'
+				})
+
+				for(var i = 0; i<arr.length; i++){
+					if(i != main){
+
+						if(i==0){
+							$(arr[0]).text(decVal);
+						}
+
+						if(i==1){
+							$(arr[1]).text(convert(mainVal, arrSys[main], 16));
+						}
+
+						if(i==2){
+							
+							str = binVal_withZeros.slice(0,8)+" "+binVal_withZeros.slice(8);
+
+
+							if(0 < decVal&&decVal<128){
+								str = str.slice(0,10)+"<span class='sky'>"+str.slice(10)+"</span>";
+
+							}else if(128 <= decVal&&decVal<2048){
+								str = str.slice(0, 5)+"<span class='red'>"+str.slice(5,11)+"</span>"+"<span class='sky'>"+str.slice(11)+"</span>";
+
+							}else if(2048<=decVal&&decVal<65536){
+								str = "<span class='blue'>"+str.slice(0,4)+"</span>"+"<span class='red'>"+str.slice(4,11)+"</span>"	+"<span class='sky'>"+str.slice(11)+"</span>";
+							}
+
+							$(arr[2]).html(str);
+						}
+
+						if(i==3){
+							var binary = binVal_withZeros;
+
+							if(0 < decVal&&decVal<128){
+								var answer = "<span class='green'>0</span><span class='sky'>"+binary.slice(-7)+"</span>";
+
+							}else if(128 <= decVal&&decVal<2048){
+								var answer = "<span class='green'>110</span><span class='red'>"+binary.slice(5,10)+"</span>&nbsp;<span class='green'>10</span><span class='sky'>"+binary.slice(10)+"</span>";
+
+							}else if(2048<=decVal&&decVal<65536){
+								var answer = "<span class='green'>1110</span><span class='blue'>"+binary.slice(0,4)+"</span>&nbsp;<span class='green'>10</span><span class='red'>"+binary.slice(4,10)+"&nbsp;<span class='green'>10</span><span class='sky'>"+binary.slice(10)+"</span>";
+							}
+							$(arr[3]).html(answer);
+						}
+
+						if(i==4){
+
+							var str = $(arr[3]).text().replace(/\s+/g, '');
+							
+							$(arr[4]).text(convert(str, 2, 16));
+						}
+					}
+				}
+			}
+
+			$(document).ready(function(){
+				
+				$("#dec").keyup(function () {
+					var oldHTML = $(this).text();
+					var newHTML = oldHTML.replace(/[^0-9]/g,''); 
+					$(this).html(newHTML); 				
+    				if(newHTML.length) $(this).caret(newHTML.length);
+    				calculateAll(0);
+				});
+
+				$("#hex").keyup(function(event) {  
+					var oldHTML = $(this).text();
+					var newHTML = oldHTML.replace(/[^0-9a-fA-F]/g,'').toUpperCase(); 
+					$(this).html(newHTML); 				
+    				if(newHTML.length&&oldHTML!=newHTML) $(this).caret(newHTML.length);
+    				calculateAll(1);
+				});
+
+				/*$("#bin").keyup(function () {  
+    				var oldHTML = $(this).text();
+					var newHTML = oldHTML.replace(/[^01]/g,''); 
+					$(this).html(newHTML); 				
+    				if(newHTML.length) $(this).caret(newHTML.length);
+    				calculateAll(2);
+				});
+
+				$("#UTFbin").keyup(function () {  
+    				this.value = this.value.replace(/[^0-9\.]/g,''); 
+				});
+
+				$("#UTFhex").keyup(function () {  
+    				this.value = this.value.replace(/[^0-9\.]/g,''); 
+				});
+*/
+				
+			})
+		</script>
+	</head>
+	<body>
+
+	<table class="table table-bordered">
+      <thead>
+        <tr class="success">
+          <th>10 - ичный код UNICODE</th>
+          <th>16 - ичный код UNICODE</th>
+          <th>2 - ичный код UNICODE</th>
+          <th>Байты UTF-8 (2 - ичная)</th>
+          <th>Байты UTF-8 (16 - ичная)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div contenteditable="true" id="dec"></div></td>
+          <td><div contenteditable="true" id="hex"></div></td>
+          <td><div id="bin"></div></td>
+          <td><div id="UTFbin"></div></td>
+          <td><div id="UTFhex"></div></td>
+        </tr>
+      </tbody>
+    </table>
+		
+
+	</body>
+</html>
