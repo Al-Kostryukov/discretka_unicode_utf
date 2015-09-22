@@ -30,7 +30,7 @@
 				color:red;
 			}
 
-			.green{
+			.black{
 				color:black;
 			}
 			.blue{
@@ -208,13 +208,13 @@
 							var binary = binVal_withZeros;
 
 							if(0 < decVal&&decVal<128){
-								var answer = "<span class='green'>0</span><span class='sky'>"+binary.slice(-7)+"</span>";
+								var answer = "<span class='black'>0</span><span class='sky'>"+binary.slice(-7)+"</span>";
 
 							}else if(128 <= decVal&&decVal<2048){
-								var answer = "<span class='green'>110</span><span class='red'>"+binary.slice(5,10)+"</span>&nbsp;<span class='green'>10</span><span class='sky'>"+binary.slice(10)+"</span>";
+								var answer = "<span class='black'>110</span><span class='red'>"+binary.slice(5,10)+"</span>&nbsp;<span class='black'>10</span><span class='sky'>"+binary.slice(10)+"</span>";
 
 							}else if(2048<=decVal&&decVal<65536){
-								var answer = "<span class='green'>1110</span><span class='blue'>"+binary.slice(0,4)+"</span>&nbsp;<span class='green'>10</span><span class='red'>"+binary.slice(4,10)+"&nbsp;<span class='green'>10</span><span class='sky'>"+binary.slice(10)+"</span>";
+								var answer = "<span class='black'>1110</span><span class='blue'>"+binary.slice(0,4)+"</span>&nbsp;<span class='black'>10</span><span class='red'>"+binary.slice(4,10)+"&nbsp;<span class='black'>10</span><span class='sky'>"+binary.slice(10)+"</span>";
 							}
 							$(arr[3]).html(answer);
 						}
